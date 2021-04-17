@@ -1,5 +1,10 @@
 #include "SqliteDatabase.h"
 
+SqliteDatabase::SqliteDatabase()
+{
+
+}
+
 bool SqliteDatabase::doesUserExist(std::string username)
 {
     return false;
