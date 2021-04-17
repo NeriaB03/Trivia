@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <map>
 #include <thread>
+#include <string>
 #include "LoginRequestHandler.h"
 #include "RequestHandlerFactory.h"
 

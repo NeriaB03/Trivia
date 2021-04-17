@@ -2,11 +2,11 @@
 
 Server::Server()
 {
-	Communicator c;
-	this->_communicator = c;
 }
 
 void Server::run()
 {
+	Communicator c;
+	this->_communicator = c;
 	this->_communicator.startHandleRequest();
 }

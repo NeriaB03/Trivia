@@ -59,9 +59,12 @@ void Communicator::handleNewClient(SOCKET s)
 	IRequestHandler* loginRequestHandler = new LoginRequestHandler;
 	this->_clients[s] = loginRequestHandler;
 	std::string messageToSend = "Hello";
-	const char* data = messageToSend.c_str();
-	if (send(s, data, messageToSend.size(), 0) == INVALID_SOCKET)
-	{
-		throw std::exception("Error while sending message to client");
+	const char* dataToSend = messageToSend.c_str();
+	if (send(s, dataToSend, messageToSend.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+	char* dataRecieved = new char[messageToSend.length() + 1];
+	if (recv(s, dataRecieved, messageToSend.length(), 0) == INVALID_SOCKET) throw std::exception("Error while reciving message from client");
+	else {
+		dataRecieved[messageToSend.length()] = 0;
+		std::cout << dataRecieved << std::endl;
 	}
 }
