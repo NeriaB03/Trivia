@@ -13,6 +13,7 @@ Communicator::~Communicator()
 {
 	try
 	{
+		closeAllConnections();
 		// the only use of the destructor should be for freeing 
 		// resources that was allocated in the constructor
 		closesocket(_serverSocket);
@@ -47,7 +48,6 @@ void Communicator::bindAndListen()
 	{
 		// the main thread is only accepting clients 
 		// and add then to the list of handlers
-		std::cout << "Waiting for client connection request" << std::endl;
 		SOCKET client_socket = ::accept(_serverSocket, NULL, NULL);
 		std::thread t(&Communicator::handleNewClient, std::ref(*this), client_socket);
 		t.detach();
@@ -66,5 +66,13 @@ void Communicator::handleNewClient(SOCKET s)
 	else {
 		dataRecieved[messageToSend.length()] = 0;
 		std::cout << dataRecieved << std::endl;
+	}
+}
+
+void Communicator::closeAllConnections()
+{
+	for (auto const& it : this->_clients) {
+		if(it.second != nullptr) delete it.second;
+		closesocket(it.first);
 	}
 }

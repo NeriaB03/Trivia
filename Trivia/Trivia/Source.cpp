@@ -17,6 +17,5 @@ int main()
 	{
 		std::cout << "Error occured: " << e.what() << std::endl;
 	}
-	system("PAUSE");
 	return 0;
 }
