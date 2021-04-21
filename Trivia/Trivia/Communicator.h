@@ -8,8 +8,12 @@
 #include <string>
 #include "LoginRequestHandler.h"
 #include "RequestHandlerFactory.h"
+#include "JsonRequestPacketDeserializer.h"
+#include "JsonResponsePacketSerializer.h"
 
 #define PORT 666
+#define BUFFER 1024
+#define START_OF_DATA_INDEX_IN_PROTOCOL 5
 
 class Communicator {
 public:
@@ -22,4 +26,5 @@ private:
 	void bindAndListen();
 	void handleNewClient(SOCKET s);
 	void closeAllConnections();
+	char* getPartFromSocket(SOCKET sc, int bytesNum, int flags);
 };
