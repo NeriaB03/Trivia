@@ -58,14 +58,42 @@ void Communicator::handleNewClient(SOCKET s)
 {
 	IRequestHandler* loginRequestHandler = new LoginRequestHandler;
 	this->_clients[s] = loginRequestHandler;
-	std::string messageToSend = "Hello";
-	const char* dataToSend = messageToSend.c_str();
-	if (send(s, dataToSend, messageToSend.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
-	char* dataRecieved = new char[messageToSend.length() + 1];
-	if (recv(s, dataRecieved, messageToSend.length(), 0) == INVALID_SOCKET) throw std::exception("Error while reciving message from client");
+	char* sizeOfDataAsCharArr = getPartFromSocket(s, START_OF_DATA_INDEX_IN_PROTOCOL, 0);
+	sizeOfDataAsCharArr[START_OF_DATA_INDEX_IN_PROTOCOL] = 0;
+	std::string sizeOfDataAsString = std::string(sizeOfDataAsCharArr);
+	char code = sizeOfDataAsString[0]; //get the first char in the data (the code by the protocol)
+	sizeOfDataAsString.erase(sizeOfDataAsString.begin()); //erase the code from the data recieved (to get only the json size)
+	int sizeOfData = std::stoi(sizeOfDataAsString);
+	char* dataRecieved = getPartFromSocket(s, sizeOfData, 0);
+	dataRecieved[sizeOfData] = 0;
+	std::string dataRecievedAsString = std::string(dataRecieved);
+	std::vector<char> dataVector;
+	for(int i=0;i<dataRecievedAsString.length();i++) dataVector.push_back(dataRecievedAsString[i]);
+	if (code == MT_CLIENT_LOG_IN) {
+		LoginRequest loginRequest;
+		loginRequest = JsonRequestPacketDeserializer::deserializeLoginRequest(dataVector);
+		LoginResponse loginResponse;
+		loginResponse.status = 1;
+		std::vector<char> response = JsonResponsePacketSerializer::serializeResponse(loginResponse);
+		std::string responseAsString = "";
+		for (auto const& it : response) {
+			responseAsString += it;
+		}
+		const char* responseToSend = responseAsString.c_str();
+		if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+	} 
 	else {
-		dataRecieved[messageToSend.length()] = 0;
-		std::cout << dataRecieved << std::endl;
+		SignupRequest signupRequest;
+		signupRequest = JsonRequestPacketDeserializer::deserializeSignupRequest(dataVector);
+		SignupResponse signupResponse;
+		signupResponse.status = 1;
+		std::vector<char> response = JsonResponsePacketSerializer::serializeResponse(signupResponse);
+		std::string responseAsString = "";
+		for (auto const& it : response) {
+			responseAsString += it;
+		}
+		const char* responseToSend = responseAsString.c_str();
+		if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
 	}
 }
 
@@ -75,4 +103,25 @@ void Communicator::closeAllConnections()
 		if(it.second != nullptr) delete it.second;
 		closesocket(it.first);
 	}
+}
+
+char* Communicator::getPartFromSocket(SOCKET sc, int bytesNum, int flags)
+{
+	if (bytesNum == 0)
+	{
+		return (char*)"";
+	}
+
+	char* data = new char[bytesNum + 1];
+	int res = recv(sc, data, bytesNum, flags);
+
+	if (res == INVALID_SOCKET)
+	{
+		std::string s = "Error while recieving from socket: ";
+		s += std::to_string(sc);
+		throw std::exception(s.c_str());
+	}
+
+	data[bytesNum] = 0;
+	return data;
 }
