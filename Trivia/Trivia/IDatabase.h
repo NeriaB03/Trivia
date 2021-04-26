@@ -1,6 +1,7 @@
 #pragma once
 
-#include <iostream>
+#include <io.h>
+#include "HelperFunctions.h"
 
 class IDatabase {
 public:
