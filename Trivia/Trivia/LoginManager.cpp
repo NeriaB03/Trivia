@@ -1,22 +1,27 @@
 #include "LoginManager.h"
 
-LoginManager::LoginManager(IDatabase* db, std::vector<LoggedUser> loggedUsers)
+LoginManager::LoginManager(IDatabase* sqliteDatabase)
 {
-	this->_database = db;
-	this->_loggedUsers = loggedUsers;
+	this->_database = sqliteDatabase;
 }
 
-void LoginManager::signup(std::string username, std::string password, std::string email)
+LoginManager::~LoginManager()
+{
+}
+
+void LoginManager::signup(std::string& username, std::string& password, std::string& email)
 {
 	this->_database->addNewUser(username,password,email);
 }
 
-void LoginManager::login(std::string username, std::string password)
+bool LoginManager::login(std::string username, std::string password)
 {
-	if (this->_database->doesPasswordMatch(username, password)) {
-		LoggedUser loggedUser(username);
-		this->_loggedUsers.push_back(loggedUser);
+	LoggedUser loggedUser(username);
+	for (auto const& it : this->_loggedUsers) {
+		if (it.getUsername() == username) return false; //if the user already connected return false
 	}
+	this->_loggedUsers.push_back(loggedUser);
+	return true;
 }
 
 void LoginManager::logout(std::string username)
@@ -29,4 +34,9 @@ void LoginManager::logout(std::string username)
 			}
 		}
 	}
+}
+
+IDatabase* LoginManager::getDatabase() const
+{
+	return this->_database;
 }

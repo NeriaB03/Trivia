@@ -17,6 +17,7 @@ bool HelperFunctions::runSqlWithoutCallback(std::string sqlStatement, sqlite3* d
 	char* messageError = nullptr;
 	int res = sqlite3_exec(db, sqlStatement.c_str(), nullptr, nullptr, &messageError);
 	if (res != SQLITE_OK) {
+		std::cout << messageError << std::endl;
 		sqlite3_free(messageError);
 		return false;
 	}
@@ -30,4 +31,13 @@ int HelperFunctions::callback(void* data, int argc, char** argv, char** azColNam
 		values->push_back(std::pair<std::string, std::string>(azColName[i], argv[i]));
 	}
 	return 0;
+}
+
+std::string HelperFunctions::convertVectorOfCharsToString(std::vector<char> charVector)
+{
+	std::string vectorAsString = "";
+	for (auto const& it : charVector) {
+		vectorAsString += it;
+	}
+	return vectorAsString;
 }

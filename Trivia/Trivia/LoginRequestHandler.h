@@ -4,6 +4,13 @@
 
 class LoginRequestHandler : public IRequestHandler {
 public:
-	virtual bool isRequestRelevant(RequestInfo);
-	virtual RequestResult handleRequest(RequestInfo);
+	LoginRequestHandler(class RequestHandlerFactory& handlerFactory);
+	~LoginRequestHandler();
+	virtual bool isRequestRelevant(RequestInfo requestInfo);
+	virtual RequestResult handleRequest(RequestInfo requestInfo);
+private:
+	RequestResult login(RequestInfo requestInfo);
+	RequestResult signup(RequestInfo requestInfo);
+	LoginManager& _loginManager;
+	class RequestHandlerFactory& _handlerFactory;
 };
