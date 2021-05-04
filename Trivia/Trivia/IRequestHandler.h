@@ -3,6 +3,11 @@
 #include <iostream>
 #include <time.h>
 #include <vector>
+#include "LoginManager.h"
+#include "RequestHandlerFactory.h"
+#include "JsonRequestPacketDeserializer.h"
+#include "MenuRequestHandler.h"
+#include "JsonResponsePacketSerializer.h"
 
 struct RequestInfo {
 	int id;
@@ -12,7 +17,7 @@ struct RequestInfo {
 
 struct RequestResult {
 	std::vector<char> buffer;
-	//IRequestHandler* newHandler;
+	class IRequestHandler* newHandler;
 };
 
 class IRequestHandler {

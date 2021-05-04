@@ -17,6 +17,6 @@ SignupRequest JsonRequestPacketDeserializer::deserializeSignupRequest(std::vecto
     nlohmann::json loginJson = nlohmann::json::parse(bufferAsString);
     sr.username = loginJson["username"];
     sr.password = loginJson["password"];
-    sr.email = loginJson["mail"];
+    sr.email = loginJson["email"];
     return sr;
 }
