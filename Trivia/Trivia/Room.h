@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 #include "LoggedUser.h"
 
 struct RoomData {
@@ -15,9 +16,11 @@ struct RoomData {
 class Room {
 public:
 	Room(RoomData data);
-	bool addUser(LoggedUser loggedUser);
-	bool removeUser(LoggedUser loggedUser);
+	~Room();
+	void addUser(LoggedUser loggedUser);
+	void removeUser(LoggedUser loggedUser);
 	std::vector<std::string> getAllUsers();
+	RoomData getRoomData() const;
 private:
 	RoomData _metadata;
 	std::vector<LoggedUser> _users;

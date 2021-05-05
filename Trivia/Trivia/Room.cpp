@@ -5,23 +5,23 @@ Room::Room(RoomData data)
 	this->_metadata = data;
 }
 
-bool Room::addUser(LoggedUser loggedUser)
+Room::~Room()
 {
-	if (checkIfUserConnected(loggedUser.getUsername())) return false; //if user already connected return false
-	this->_users.push_back(loggedUser);
-	return true;
 }
 
-bool Room::removeUser(LoggedUser loggedUser)
+void Room::addUser(LoggedUser loggedUser)
+{
+	if (!checkIfUserConnected(loggedUser.getUsername())) this->_users.push_back(loggedUser);
+}
+
+void Room::removeUser(LoggedUser loggedUser)
 {
 	for (auto i = this->_users.begin(); i != this->_users.end(); ++i) {
 		if ((*i).getUsername() == loggedUser.getUsername()) {
 			this->_users.erase(i);
 			i--;
-			return true;
 		}
 	}
-	return false;
 }
 
 std::vector<std::string> Room::getAllUsers()
@@ -31,6 +31,11 @@ std::vector<std::string> Room::getAllUsers()
 		vectorToReturn.push_back(it.getUsername());
 	}
 	return vectorToReturn;
+}
+
+RoomData Room::getRoomData() const
+{
+	return this->_metadata;
 }
 
 bool Room::checkIfUserConnected(std::string username)
