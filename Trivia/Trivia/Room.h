@@ -15,6 +15,7 @@ struct RoomData {
 
 class Room {
 public:
+	Room();
 	Room(RoomData data);
 	~Room();
 	void addUser(LoggedUser loggedUser);

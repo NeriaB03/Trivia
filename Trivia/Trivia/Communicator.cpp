@@ -56,11 +56,6 @@ void Communicator::bindAndListen()
 
 void Communicator::handleNewClient(SOCKET s)
 {
-	IDatabase* database = new SqliteDatabase();
-	LoginManager loginManager(database);
-	RequestHandlerFactory requestHandlerFactory(loginManager);
-	IRequestHandler* loginRequestHandler = new LoginRequestHandler(requestHandlerFactory);
-	this->_clients[s] = loginRequestHandler;
 	char* sizeOfDataAsCharArr = getPartFromSocket(s, START_OF_DATA_INDEX_IN_PROTOCOL, 0);
 	sizeOfDataAsCharArr[START_OF_DATA_INDEX_IN_PROTOCOL] = 0;
 	std::string sizeOfDataAsString = std::string(sizeOfDataAsCharArr);
@@ -72,21 +67,28 @@ void Communicator::handleNewClient(SOCKET s)
 	std::string dataRecievedAsString = std::string(dataRecieved);
 	std::vector<char> dataVector;
 	for(int i=0;i<dataRecievedAsString.length();i++) dataVector.push_back(dataRecievedAsString[i]);
+	IDatabase* database = new SqliteDatabase();
+	LoginManager loginManager(database);
+	RequestInfo requestInfo;
+	requestInfo.buffer = dataVector;
+	requestInfo.id = 0;
+	requestInfo.receivalTime = std::time(0);
+	LoginRequest loginRequest = JsonRequestPacketDeserializer::deserializeLoginRequest(requestInfo.buffer);
+	LoggedUser loggedUser(loginRequest.username);
+	StatisticsManager statisticsManager(database);
+	RoomManager roomManager;
+	RequestHandlerFactory requestHandlerFactory(database,loginManager,loggedUser,statisticsManager,roomManager);
+	IRequestHandler* loginRequestHandler = new LoginRequestHandler(requestHandlerFactory);
+	this->_clients[s] = loginRequestHandler;
 	if (code == MT_CLIENT_LOG_IN) {
-		RequestInfo requestInfo;
-		requestInfo.buffer = dataVector;
 		requestInfo.id = int(MT_CLIENT_LOG_IN);
-		requestInfo.receivalTime = std::time(0);
 		RequestResult requestResult = loginRequestHandler->handleRequest(requestInfo);
 		std::string responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
 		const char* responseToSend = responseAsString.c_str();
 		if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
 	} 
 	else {
-		RequestInfo requestInfo;
-		requestInfo.buffer = dataVector;
 		requestInfo.id = int(MT_CLIENT_SIGN_UP);
-		requestInfo.receivalTime = std::time(0);
 		RequestResult requestResult = loginRequestHandler->handleRequest(requestInfo);
 		std::string responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
 		const char* responseToSend = responseAsString.c_str();

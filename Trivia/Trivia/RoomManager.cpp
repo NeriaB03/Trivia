@@ -20,7 +20,8 @@ void RoomManager::deleteRoom(unsigned int id)
 
 unsigned int RoomManager::getRoomState(int id)
 {
-	if (checkIfRoomExist(id)) this->_rooms[id].getRoomData().isActive;
+	if (checkIfRoomExist(id)) return this->_rooms[id].getRoomData().isActive;
+	return 0;
 }
 
 std::vector<RoomData> RoomManager::getRooms() const
