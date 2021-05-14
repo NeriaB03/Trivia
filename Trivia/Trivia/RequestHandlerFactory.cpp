@@ -23,7 +23,7 @@ LoginManager& RequestHandlerFactory::getLoginManager()
 
 MenuRequestHandler* RequestHandlerFactory::createMenuRequestHandler()
 {
-	MenuRequestHandler* mrh = new MenuRequestHandler(this->_loggedUser,getRoomManager(),getStatisticsManager(),(*this));
+	MenuRequestHandler* mrh = new MenuRequestHandler((*this),this->_loggedUser);
 	return mrh;
 }
 

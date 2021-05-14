@@ -56,6 +56,7 @@ void Communicator::bindAndListen()
 
 void Communicator::handleNewClient(SOCKET s)
 {
+	//login or signup at first
 	char* sizeOfDataAsCharArr = getPartFromSocket(s, START_OF_DATA_INDEX_IN_PROTOCOL, 0);
 	sizeOfDataAsCharArr[START_OF_DATA_INDEX_IN_PROTOCOL] = 0;
 	std::string sizeOfDataAsString = std::string(sizeOfDataAsCharArr);
@@ -94,6 +95,9 @@ void Communicator::handleNewClient(SOCKET s)
 		const char* responseToSend = responseAsString.c_str();
 		if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
 	}
+
+	//handle the user
+
 }
 
 void Communicator::closeAllConnections()

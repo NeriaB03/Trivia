@@ -34,7 +34,7 @@ RequestResult LoginRequestHandler::login(RequestInfo requestInfo)
             LoginResponse loginResponse;
             loginResponse.status = 1;
             requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(loginResponse);
-            requestResult.newHandler = this->_handlerFactory.createLoginRequestHanlder();
+            requestResult.newHandler = this->_handlerFactory.createMenuRequestHandler();
         }
         else {
             ErrorResponse errorResponse;
@@ -61,7 +61,7 @@ RequestResult LoginRequestHandler::signup(RequestInfo requestInfo)
         SignupResponse signupResponse;
         signupResponse.status = 1;
         requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(signupResponse);
-        requestResult.newHandler = this->_handlerFactory.createLoginRequestHanlder();
+        requestResult.newHandler = this->_handlerFactory.createMenuRequestHandler();
     }
     else {
         ErrorResponse errorResponse;

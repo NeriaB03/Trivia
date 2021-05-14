@@ -33,6 +33,16 @@ std::vector<RoomData> RoomManager::getRooms() const
 	return vectorToReturn;
 }
 
+Room RoomManager::getRoomById(unsigned int id) const
+{
+	for (auto const& it : this->_rooms) {
+		if (it.second.getRoomData().id == id) {
+			return it.second;
+		}
+	}
+	throw std::exception("Error - Room is not exist");
+}
+
 bool RoomManager::checkIfRoomExist(unsigned int id) const
 {
 	return this->_rooms.find(id) != this->_rooms.end(); //if the room exist the room is not equal to the end of the rooms map
