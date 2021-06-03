@@ -10,9 +10,13 @@ Server::~Server()
 
 void Server::run()
 {
-	Communicator communicator;
-	this->_communicator = communicator;
-	std::thread t_connector(&Communicator::startHandleRequest, std::ref(this->_communicator));
+	IDatabase* database = new SqliteDatabase();
+	StatisticsManager statisticsManager(database);
+	RoomManager roomManager;
+	LoginManager loginManager(database);
+	RequestHandlerFactory requestHandlerFactory(database, loginManager, statisticsManager, roomManager);
+	Communicator communicator(requestHandlerFactory);
+	std::thread t_connector(&Communicator::startHandleRequest, std::ref(communicator));
 	t_connector.detach();
 	while (true) {
 		std::string cmd = "";

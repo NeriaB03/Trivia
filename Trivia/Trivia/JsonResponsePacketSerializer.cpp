@@ -135,6 +135,58 @@ std::vector<char> JsonResponsePacketSerializer::serializeResponse(GetHighScoresR
     return buffer;
 }
 
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(CloseRoomResponse crr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json joinJson = {
+        {"Status",std::to_string(crr.status)}
+    };
+    std::string jsonAsString = joinJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(StartGameResponse sgr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json joinJson = {
+        {"Status",std::to_string(sgr.status)}
+    };
+    std::string jsonAsString = joinJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(GetRoomStateResponse grsr)
+{
+    std::vector<char> buffer;
+    std::string allPlayers = "";
+    for (auto const& it : grsr.players) {
+        allPlayers += it;
+    }
+    //create the json object
+    nlohmann::json joinJson = {
+        {"Status",std::to_string(grsr.status)},{"hasGameBegan",std::to_string(grsr.hasGameBegan)},{"players",allPlayers},{"questionCount",std::to_string(grsr.questionCount)},{"answerTimeout",std::to_string(grsr.answerTimeout)}
+    };
+    std::string jsonAsString = joinJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(LeaveRoomResponse lrr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json joinJson = {
+        {"Status",std::to_string(lrr.status)}
+    };
+    std::string jsonAsString = joinJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
 std::string JsonResponsePacketSerializer::getPaddedNumber(int num, int digits)
 {
     std::ostringstream ostr;

@@ -1,6 +1,6 @@
 #include "RequestHandlerFactory.h"
 
-RequestHandlerFactory::RequestHandlerFactory(IDatabase* database,LoginManager& loginManager,LoggedUser& loggedUser,StatisticsManager& statisticsManager,RoomManager& roomManager):_loginManager(loginManager),_loggedUser(loggedUser),_statisticsManager(statisticsManager),_roomManager(roomManager)
+RequestHandlerFactory::RequestHandlerFactory(IDatabase* database,LoginManager& loginManager,StatisticsManager& statisticsManager,RoomManager& roomManager):_loginManager(loginManager),_statisticsManager(statisticsManager),_roomManager(roomManager)
 {
 	this->_database = database;
 }
@@ -21,9 +21,9 @@ LoginManager& RequestHandlerFactory::getLoginManager()
 	return this->_loginManager;
 }
 
-MenuRequestHandler* RequestHandlerFactory::createMenuRequestHandler()
+MenuRequestHandler* RequestHandlerFactory::createMenuRequestHandler(LoggedUser loggedUser)
 {
-	MenuRequestHandler* mrh = new MenuRequestHandler((*this),this->_loggedUser);
+	MenuRequestHandler* mrh = new MenuRequestHandler((*this),loggedUser);
 	return mrh;
 }
 

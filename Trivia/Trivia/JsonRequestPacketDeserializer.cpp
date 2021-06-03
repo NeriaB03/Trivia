@@ -35,7 +35,7 @@ JoinRoomRequest JsonRequestPacketDeserializer::deserializeJoinRoomRequest(std::v
     JoinRoomRequest jrr;
     std::string bufferAsString = std::string(buffer.begin(), buffer.end());
     nlohmann::json joinRoomJson = nlohmann::json::parse(bufferAsString);
-    jrr.roomId = joinRoomJson["roomId"];
+    jrr.roomName = joinRoomJson["roomName"];
     return jrr;
 }
 

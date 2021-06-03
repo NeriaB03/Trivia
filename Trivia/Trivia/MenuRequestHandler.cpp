@@ -57,7 +57,6 @@ RequestResult MenuRequestHandler::getRooms(RequestInfo requestInfo)
 		rooms.push_back(',');
 	}
 	requestResult.buffer = rooms;
-	requestResult.newHandler = this->_handlerFactory.createMenuRequestHandler();
 	return requestResult;
 }
 
@@ -79,7 +78,6 @@ RequestResult MenuRequestHandler::getStatistics(RequestInfo requestInfo)
 		statistics.push_back(',');
 	}
 	requestResult.buffer = statistics;
-	requestResult.newHandler = this->_handlerFactory.createMenuRequestHandler();
 	return requestResult;
 }
 
@@ -95,7 +93,6 @@ RequestResult MenuRequestHandler::getHighScore(RequestInfo requestInfo)
 		highScores.push_back(',');
 	}
 	requestResult.buffer = highScores;
-	requestResult.newHandler = this->_handlerFactory.createMenuRequestHandler();
 	return requestResult;
 }
 
@@ -104,22 +101,43 @@ RequestResult MenuRequestHandler::joinRoom(RequestInfo requestInfo)
 	RequestResult requestResult;
 	JoinRoomRequest joinRoomRequest;
 	joinRoomRequest = JsonRequestPacketDeserializer::deserializeJoinRoomRequest(requestInfo.buffer);
-	this->_handlerFactory.getRoomManager().getRoomById(joinRoomRequest.roomId).addUser(this->_user);
+	std::vector<RoomData> rooms = this->_handlerFactory.getRoomManager().getRooms();
+	bool isRoomExist = false;
+	for (auto const& it : rooms) {
+		if (it.name == joinRoomRequest.roomName) {
+			isRoomExist = true;
+			break;
+		}
+	}
 	JoinRoomResponse joinRoomResponse;
-	joinRoomResponse.status = 1;
+	if (isRoomExist) {
+		unsigned int roomId = 0;
+		for (auto const& it : rooms) {
+			if (it.name == joinRoomRequest.roomName) roomId = it.id;
+		}
+		this->_handlerFactory.getRoomManager().getRoomById(roomId).addUser(this->_user);
+		joinRoomResponse.status = 1;
+	}
+	else joinRoomResponse.status = 0;
 	requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(joinRoomResponse);
-	requestResult.newHandler = this->_handlerFactory.createMenuRequestHandler();
 	return requestResult;
 }
 
 RequestResult MenuRequestHandler::createRoom(RequestInfo requestInfo)
 {
 	RequestResult requestResult;
-	RoomData roomData;
-	this->_handlerFactory.getRoomManager().createRoom(this->_user, roomData);
+	CreateRoomRequest createRoomRequest = JsonRequestPacketDeserializer::deserializeCreateRoomRequest(requestInfo.buffer);
+	RoomData roomData = {
+		this->_handlerFactory.getRoomManager().getRooms().size() != 0 ? this->_handlerFactory.getRoomManager().getRooms().back().id+1 : 1,
+		createRoomRequest.roomName,
+		createRoomRequest.maxUsers,
+		createRoomRequest.questionCount,
+		createRoomRequest.questionTimeout,
+		false
+	};
 	CreateRoomResponse createRoomResponse;
-	createRoomResponse.status = 1;
+	if (this->_handlerFactory.getRoomManager().createRoom(this->_user, roomData)) createRoomResponse.status = 1;
+	else createRoomResponse.status = 0;
 	requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(createRoomResponse);
-	requestResult.newHandler = this->_handlerFactory.createMenuRequestHandler();
 	return requestResult;
 }

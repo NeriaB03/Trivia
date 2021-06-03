@@ -20,7 +20,7 @@ struct GetPlayersInRoomRequest {
 };
 
 struct JoinRoomRequest {
-	unsigned int roomId;
+	std::string roomName;
 };
 
 struct CreateRoomRequest {

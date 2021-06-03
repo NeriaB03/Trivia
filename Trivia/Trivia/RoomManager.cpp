@@ -8,9 +8,13 @@ RoomManager::~RoomManager()
 {
 }
 
-void RoomManager::createRoom(LoggedUser loggedUser, RoomData data)
+bool RoomManager::createRoom(LoggedUser loggedUser, RoomData data)
 {
-	if (!checkIfRoomExist(data.id)) this->_rooms.insert(std::pair<unsigned int, Room>(data.id,Room(data)));
+	if (!checkIfRoomExist(data.name)) {
+		this->_rooms.insert(std::pair<unsigned int, Room>(data.id, Room(data)));
+		return true;
+	}
+	return false;
 }
 
 void RoomManager::deleteRoom(unsigned int id)
@@ -47,3 +51,11 @@ bool RoomManager::checkIfRoomExist(unsigned int id) const
 {
 	return this->_rooms.find(id) != this->_rooms.end(); //if the room exist the room is not equal to the end of the rooms map
 }
+
+bool RoomManager::checkIfRoomExist(std::string name) const
+{
+	for (auto const& it : this->_rooms)
+		if (it.second.getRoomData().name == name) return true;
+	return false;
+}
+

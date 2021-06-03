@@ -6,11 +6,11 @@
 
 class RequestHandlerFactory {
 public:
-	RequestHandlerFactory(IDatabase* database,LoginManager& loginManager,LoggedUser& loggedUser,StatisticsManager& statisticsManager,RoomManager& roomManager);
+	RequestHandlerFactory(IDatabase* database,LoginManager& loginManager,StatisticsManager& statisticsManager,RoomManager& roomManager);
 	~RequestHandlerFactory();
 	class LoginRequestHandler* createLoginRequestHanlder();
 	LoginManager& getLoginManager();
-	class MenuRequestHandler* createMenuRequestHandler();
+	class MenuRequestHandler* createMenuRequestHandler(LoggedUser loggedUser);
 	StatisticsManager& getStatisticsManager();
 	RoomManager& getRoomManager();
 private:
@@ -18,5 +18,4 @@ private:
 	IDatabase* _database;
 	RoomManager& _roomManager;
 	StatisticsManager& _statisticsManager;
-	LoggedUser _loggedUser;
 };

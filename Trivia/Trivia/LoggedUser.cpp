@@ -13,3 +13,8 @@ std::string LoggedUser::getUsername() const
 {
 	return this->_username;
 }
+
+void LoggedUser::setUsername(std::string username)
+{
+	this->_username = username;
+}

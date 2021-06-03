@@ -30,11 +30,17 @@ RequestResult LoginRequestHandler::login(RequestInfo requestInfo)
     RequestResult requestResult;
     if (this->_handlerFactory.getLoginManager().getDatabase()->doesUserExist(loginRequest.username)) {
         if (this->_handlerFactory.getLoginManager().getDatabase()->doesPasswordMatch(loginRequest.username, loginRequest.password)) {
-            this->_handlerFactory.getLoginManager().login(loginRequest.username, loginRequest.password);
-            LoginResponse loginResponse;
-            loginResponse.status = 1;
-            requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(loginResponse);
-            requestResult.newHandler = this->_handlerFactory.createMenuRequestHandler();
+            if (this->_handlerFactory.getLoginManager().login(loginRequest.username, loginRequest.password)) {
+                LoginResponse loginResponse;
+                loginResponse.status = 1;
+                requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(loginResponse);
+            }
+            else {
+                ErrorResponse errorResponse;
+                errorResponse.message = "User already connected...";
+                requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(errorResponse);
+                requestResult.newHandler = nullptr;
+            }
         }
         else {
             ErrorResponse errorResponse;
@@ -45,7 +51,7 @@ RequestResult LoginRequestHandler::login(RequestInfo requestInfo)
     }
     else {
         ErrorResponse errorResponse;
-        errorResponse.message = "User does not match...";
+        errorResponse.message = "User does not exists...";
         requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(errorResponse);
         requestResult.newHandler = nullptr;
     }
@@ -61,7 +67,7 @@ RequestResult LoginRequestHandler::signup(RequestInfo requestInfo)
         SignupResponse signupResponse;
         signupResponse.status = 1;
         requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(signupResponse);
-        requestResult.newHandler = this->_handlerFactory.createMenuRequestHandler();
+        //requestResult.newHandler = this->_handlerFactory.createMenuRequestHandler();
     }
     else {
         ErrorResponse errorResponse;

@@ -1,6 +1,6 @@
 #include "Communicator.h"
 
-Communicator::Communicator()
+Communicator::Communicator(RequestHandlerFactory& requestHandlerFactory):_requestHandlerFactory(requestHandlerFactory)
 {
 	// this server use TCP. that why SOCK_STREAM & IPPROTO_TCP
 	// if the server use UDP we will use: SOCK_DGRAM & IPPROTO_UDP
@@ -44,6 +44,7 @@ void Communicator::bindAndListen()
 		throw std::exception(__FUNCTION__ " - listen");
 	std::cout << "Listening on port " << PORT << std::endl;
 
+
 	while (true)
 	{
 		// the main thread is only accepting clients 
@@ -56,47 +57,94 @@ void Communicator::bindAndListen()
 
 void Communicator::handleNewClient(SOCKET s)
 {
-	//login or signup at first
-	char* sizeOfDataAsCharArr = getPartFromSocket(s, START_OF_DATA_INDEX_IN_PROTOCOL, 0);
-	sizeOfDataAsCharArr[START_OF_DATA_INDEX_IN_PROTOCOL] = 0;
-	std::string sizeOfDataAsString = std::string(sizeOfDataAsCharArr);
-	char code = sizeOfDataAsString[0]; //get the first char in the data (the code by the protocol)
-	sizeOfDataAsString.erase(sizeOfDataAsString.begin()); //erase the code from the data recieved (to get only the json size)
-	int sizeOfData = std::stoi(sizeOfDataAsString);
-	char* dataRecieved = getPartFromSocket(s, sizeOfData, 0);
-	dataRecieved[sizeOfData] = 0;
-	std::string dataRecievedAsString = std::string(dataRecieved);
-	std::vector<char> dataVector;
-	for(int i=0;i<dataRecievedAsString.length();i++) dataVector.push_back(dataRecievedAsString[i]);
-	IDatabase* database = new SqliteDatabase();
-	LoginManager loginManager(database);
-	RequestInfo requestInfo;
-	requestInfo.buffer = dataVector;
-	requestInfo.id = 0;
-	requestInfo.receivalTime = std::time(0);
-	LoginRequest loginRequest = JsonRequestPacketDeserializer::deserializeLoginRequest(requestInfo.buffer);
-	LoggedUser loggedUser(loginRequest.username);
-	StatisticsManager statisticsManager(database);
-	RoomManager roomManager;
-	RequestHandlerFactory requestHandlerFactory(database,loginManager,loggedUser,statisticsManager,roomManager);
-	IRequestHandler* loginRequestHandler = new LoginRequestHandler(requestHandlerFactory);
-	this->_clients[s] = loginRequestHandler;
-	if (code == MT_CLIENT_LOG_IN) {
-		requestInfo.id = int(MT_CLIENT_LOG_IN);
-		RequestResult requestResult = loginRequestHandler->handleRequest(requestInfo);
-		std::string responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
-		const char* responseToSend = responseAsString.c_str();
-		if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
-	} 
-	else {
-		requestInfo.id = int(MT_CLIENT_SIGN_UP);
-		RequestResult requestResult = loginRequestHandler->handleRequest(requestInfo);
-		std::string responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
-		const char* responseToSend = responseAsString.c_str();
-		if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+	std::string username = "";
+	try {
+		IRequestHandler* loginRequestHandler = new LoginRequestHandler(this->_requestHandlerFactory);
+		std::pair<RequestInfo, std::pair<char, int>> requestInfo = getDataVector(s);
+		LoginRequest loginRequest = JsonRequestPacketDeserializer::deserializeLoginRequest(requestInfo.first.buffer);
+		LoggedUser loggedUser(loginRequest.username);
+		username = loginRequest.username;
+		this->_clients[s] = loginRequestHandler;
+		bool isFinishLogin = false;
+		while (!isFinishLogin) {
+			if (requestInfo.second.first == MT_CLIENT_LOG_IN) {
+				requestInfo.first.id = int(MT_CLIENT_LOG_IN);
+				RequestResult requestResult = loginRequestHandler->handleRequest(requestInfo.first);
+				std::string responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+				const char* responseToSend = responseAsString.c_str();
+				if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+				if (requestResult.newHandler == nullptr) {
+					requestResult.newHandler = new LoginRequestHandler(this->_requestHandlerFactory);
+					requestInfo = getDataVector(s);
+					loginRequest = JsonRequestPacketDeserializer::deserializeLoginRequest(requestInfo.first.buffer);
+					loggedUser.setUsername(loginRequest.username);
+				}
+				else isFinishLogin = true;
+			}
+			else if (requestInfo.second.first == MT_CLIENT_SIGN_UP) {
+				requestInfo.first.id = int(MT_CLIENT_SIGN_UP);
+				RequestResult requestResult = loginRequestHandler->handleRequest(requestInfo.first);
+				std::string responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+				const char* responseToSend = responseAsString.c_str();
+				if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+				if (requestResult.newHandler == nullptr) {
+					requestResult.newHandler = new LoginRequestHandler(this->_requestHandlerFactory);
+					requestInfo = getDataVector(s);
+					loginRequest = JsonRequestPacketDeserializer::deserializeLoginRequest(requestInfo.first.buffer);
+					loggedUser.setUsername(loginRequest.username);
+				}
+				else isFinishLogin = true;
+			}
+		}
+		IRequestHandler* menuRequestHandler = new MenuRequestHandler(this->_requestHandlerFactory,loggedUser);
+		while (requestInfo.second.first != MT_CLIENT_LOG_OUT) {
+			requestInfo = getDataVector(s);
+			RequestResult requestResult;
+			std::string responseAsString = "";
+			const char* responseToSend;
+			switch (requestInfo.second.first) {
+			case MT_CLIENT_LOG_OUT:
+				requestInfo.first.id = int(MT_CLIENT_LOG_OUT);
+				requestResult = menuRequestHandler->handleRequest(requestInfo.first);
+				responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+				responseToSend = responseAsString.c_str();
+				if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+				break;
+			case MT_CLIENT_JOIN_ROOM:
+				requestInfo.first.id = int(MT_CLIENT_JOIN_ROOM);
+				requestResult = menuRequestHandler->handleRequest(requestInfo.first);
+				responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+				responseToSend = responseAsString.c_str();
+				if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+				break;
+			case MT_CLIENT_CREATE_ROOM:
+				requestInfo.first.id = int(MT_CLIENT_CREATE_ROOM);
+				requestResult = menuRequestHandler->handleRequest(requestInfo.first);
+				responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+				responseToSend = responseAsString.c_str();
+				if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+				break;
+			case MT_CLIENT_GET_STATISTICS:
+				requestInfo.first.id = int(MT_CLIENT_GET_STATISTICS);
+				requestResult = menuRequestHandler->handleRequest(requestInfo.first);
+				responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+				responseToSend = responseAsString.c_str();
+				if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+				break;
+			case MT_CLIENT_HIGH_SCORES:
+				requestInfo.first.id = int(MT_CLIENT_HIGH_SCORES);
+				requestResult = menuRequestHandler->handleRequest(requestInfo.first);
+				responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+				responseToSend = responseAsString.c_str();
+				if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+				break;
+			}
+		}
 	}
-
-	//handle the user
+	catch (std::exception& e) {
+		this->_clients.erase(s);
+		this->_requestHandlerFactory.getLoginManager().logout(username);
+	}
 
 }
 
@@ -106,6 +154,28 @@ void Communicator::closeAllConnections()
 		if(it.second != nullptr) delete it.second;
 		closesocket(it.first);
 	}
+}
+
+std::pair<char,int> Communicator::getCodeAndSize(SOCKET s)
+{
+	char* sizeOfDataAsCharArr = getPartFromSocket(s, START_OF_DATA_INDEX_IN_PROTOCOL, 0);
+	sizeOfDataAsCharArr[START_OF_DATA_INDEX_IN_PROTOCOL] = 0;
+	std::string sizeOfDataAsString = std::string(sizeOfDataAsCharArr);
+	char code = sizeOfDataAsString[0]; //get the first char in the data (the code by the protocol)
+	sizeOfDataAsString.erase(sizeOfDataAsString.begin()); //erase the code from the data recieved (to get only the json size)
+	int sizeOfData = std::stoi(sizeOfDataAsString);
+	return std::pair<char, int>(code, sizeOfData);
+}
+
+std::vector<char> Communicator::getData(SOCKET s,int size)
+{
+	char* dataRecieved;
+	std::vector<char> dataVector;
+	dataRecieved = getPartFromSocket(s, size, 0);
+	dataRecieved[size] = 0;
+	std::string dataRecievedAsString = std::string(dataRecieved);
+	for (int i = 0; i < dataRecievedAsString.length(); i++) dataVector.push_back(dataRecievedAsString[i]);
+	return dataVector;
 }
 
 char* Communicator::getPartFromSocket(SOCKET sc, int bytesNum, int flags)
@@ -127,4 +197,16 @@ char* Communicator::getPartFromSocket(SOCKET sc, int bytesNum, int flags)
 
 	data[bytesNum] = 0;
 	return data;
+}
+
+std::pair<RequestInfo, std::pair<char, int>> Communicator::getDataVector(SOCKET s)
+{
+	std::pair<char, int> codeAndSize = getCodeAndSize(s);
+	std::vector<char> dataVector;
+	if(codeAndSize.second != 0) dataVector = getData(s, codeAndSize.second);
+	RequestInfo requestInfo;
+	requestInfo.buffer = dataVector;
+	requestInfo.id = 0;
+	requestInfo.receivalTime = std::time(0);
+	return std::pair<RequestInfo, std::pair<char, int>>(requestInfo,codeAndSize);
 }
