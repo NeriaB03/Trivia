@@ -17,7 +17,7 @@
 
 class Communicator {
 public:
-	Communicator();
+	Communicator(RequestHandlerFactory& requestHandlerFactory);
 	~Communicator();
 	void startHandleRequest();
 private:
@@ -26,5 +26,9 @@ private:
 	void bindAndListen();
 	void handleNewClient(SOCKET s);
 	void closeAllConnections();
+	std::pair<char,int> getCodeAndSize(SOCKET s);
+	std::vector<char> getData(SOCKET s,int size);
 	char* getPartFromSocket(SOCKET sc, int bytesNum, int flags);
+	std::pair<RequestInfo,std::pair<char,int>> getDataVector(SOCKET s);
+	RequestHandlerFactory& _requestHandlerFactory;
 };

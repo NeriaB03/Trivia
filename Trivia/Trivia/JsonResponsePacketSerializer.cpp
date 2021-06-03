@@ -16,10 +16,10 @@ std::vector<char> JsonResponsePacketSerializer::serializeResponse(LoginResponse 
 {
     std::vector<char> buffer;
     //create the json object
-    nlohmann::json errorJson = {
-        {"Message",std::to_string(lr.status)}
+    nlohmann::json loginJson = {
+        {"Status",std::to_string(lr.status)}
     };
-    std::string jsonAsString = errorJson.dump(); //convert the json object to string
+    std::string jsonAsString = loginJson.dump(); //convert the json object to string
     for (int i=0;i<jsonAsString.length();i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
     return buffer;
 }
@@ -28,11 +28,162 @@ std::vector<char> JsonResponsePacketSerializer::serializeResponse(SignupResponse
 {
     std::vector<char> buffer;
     //create the json object
-    nlohmann::json errorJson = {
-        {"Message",std::to_string(sr.status)}
+    nlohmann::json signupJson = {
+        {"Status",std::to_string(sr.status)}
     };
-    std::string jsonAsString = errorJson.dump(); //convert the json object to string
+    std::string jsonAsString = signupJson.dump(); //convert the json object to string
     for (int i=0;i<jsonAsString.length();i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(LogoutResponse lr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json logoutJson = {
+        {"Status",std::to_string(lr.status)}
+    };
+    std::string jsonAsString = logoutJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(GetRoomResponse rr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    std::string rooms = "";
+    for (auto const& it : rr.rooms) {
+        rooms += it.name + ",";
+    }
+    nlohmann::json roomsJson = {
+        {"Rooms",rooms}
+    };
+    std::string jsonAsString = roomsJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(GetPlayersInRoomResponse pr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    std::string players = "";
+    for (auto const& it : pr.players) {
+        players += it + ",";
+    }
+    nlohmann::json playersJson = {
+        {"PlayersInRoom",players}
+    };
+    std::string jsonAsString = playersJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(JoinRoomResponse jr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json joinJson = {
+        {"Status",std::to_string(jr.status)}
+    };
+    std::string jsonAsString = joinJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(CreateRoomResponse cr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json createJson = {
+        {"Status",std::to_string(cr.status)}
+    };
+    std::string jsonAsString = createJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(GetStatisticsResponse sr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    std::string statistics = "";
+    for (auto const& it : sr.statistics) {
+        statistics += it + ",";
+    }
+    nlohmann::json statisticsJson = {
+        {"UserStatistics",statistics}
+    };
+    std::string jsonAsString = statisticsJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(GetHighScoresResponse hsr)
+{
+    std::vector<char> buffer;
+    std::string highScores = "";
+    for (auto const& it : hsr.highScores) {
+        highScores += it + ",";
+    }
+    nlohmann::json highScoresJson = {
+        {"HighScores",highScores}
+    };
+    std::string jsonAsString = highScoresJson.dump();
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]);
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(CloseRoomResponse crr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json joinJson = {
+        {"Status",std::to_string(crr.status)}
+    };
+    std::string jsonAsString = joinJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(StartGameResponse sgr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json joinJson = {
+        {"Status",std::to_string(sgr.status)}
+    };
+    std::string jsonAsString = joinJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(GetRoomStateResponse grsr)
+{
+    std::vector<char> buffer;
+    std::string allPlayers = "";
+    for (auto const& it : grsr.players) {
+        allPlayers += it;
+    }
+    //create the json object
+    nlohmann::json joinJson = {
+        {"Status",std::to_string(grsr.status)},{"hasGameBegan",std::to_string(grsr.hasGameBegan)},{"players",allPlayers},{"questionCount",std::to_string(grsr.questionCount)},{"answerTimeout",std::to_string(grsr.answerTimeout)}
+    };
+    std::string jsonAsString = joinJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(LeaveRoomResponse lrr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json joinJson = {
+        {"Status",std::to_string(lrr.status)}
+    };
+    std::string jsonAsString = joinJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
     return buffer;
 }
 

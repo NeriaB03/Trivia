@@ -30,7 +30,7 @@ void LoginManager::logout(std::string username)
 		for (auto i = this->_loggedUsers.begin(); i != this->_loggedUsers.end(); ++i) {
 			if ((*i).getUsername() == username) {
 				this->_loggedUsers.erase(i);
-				i--;
+				break;
 			}
 		}
 	}
