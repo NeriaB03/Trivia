@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include "sqlite3.h"
+#include "Room.h"
 
 class HelperFunctions {
 public:
@@ -10,4 +11,5 @@ public:
 	static bool runSqlWithoutCallback(std::string sqlStatement, sqlite3* db);
 	static int callback(void* data, int argc, char** argv, char** azColName);
 	static std::string convertVectorOfCharsToString(std::vector<char> charVector);
+	static RequestResult getRoomState(Room room);
 };

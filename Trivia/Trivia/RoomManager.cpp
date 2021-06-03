@@ -47,6 +47,17 @@ Room RoomManager::getRoomById(unsigned int id) const
 	throw std::exception("Error - Room is not exist");
 }
 
+Room RoomManager::getRoomByPlayerInTheRoom(std::string username)
+{
+	for (auto& it : this->_rooms) {
+		std::vector<std::string> players = it.second.getAllUsers();
+		for (auto const& playerIt : players) {
+			if (playerIt == username) return it.second;
+		}
+	}
+	throw std::exception("Error - Room is not exist");
+}
+
 bool RoomManager::checkIfRoomExist(unsigned int id) const
 {
 	return this->_rooms.find(id) != this->_rooms.end(); //if the room exist the room is not equal to the end of the rooms map

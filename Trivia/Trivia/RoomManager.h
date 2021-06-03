@@ -11,6 +11,7 @@ public:
 	unsigned int getRoomState(int id);
 	std::vector<RoomData> getRooms() const;
 	Room getRoomById(unsigned int id) const;
+	Room getRoomByPlayerInTheRoom(std::string username);
 private:
 	std::map<unsigned int,Room> _rooms;
 	bool checkIfRoomExist(unsigned int id) const;

@@ -31,4 +31,6 @@ private:
 	char* getPartFromSocket(SOCKET sc, int bytesNum, int flags);
 	std::pair<RequestInfo,std::pair<char,int>> getDataVector(SOCKET s);
 	RequestHandlerFactory& _requestHandlerFactory;
+	void handleMemberInRoom(SOCKET s,LoggedUser loggedUser);
+	void handleAdminInRoom(SOCKET s,LoggedUser loggedUser);
 };
