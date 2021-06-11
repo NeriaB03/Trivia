@@ -50,3 +50,12 @@ CreateRoomRequest JsonRequestPacketDeserializer::deserializeCreateRoomRequest(st
     crr.questionTimeout = createRoomJson["questionTimeout"];
     return crr;
 }
+
+SubmitAnswerRequest JsonRequestPacketDeserializer::deserializeSubmitAnswerRequest(std::vector<char> buffer)
+{
+    SubmitAnswerRequest sar;
+    std::string bufferAsString = std::string(buffer.begin(), buffer.end());
+    nlohmann::json createRoomJson = nlohmann::json::parse(bufferAsString);
+    sar.answerId = createRoomJson["answerId"];
+    return sar;
+}
