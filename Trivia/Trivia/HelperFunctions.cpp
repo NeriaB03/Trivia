@@ -43,17 +43,17 @@ std::string HelperFunctions::convertVectorOfCharsToString(std::vector<char> char
 	return vectorAsString;
 }
 
-RequestResult HelperFunctions::getRoomState(Room room)
-{
-	RequestResult requestResult;
-	GetRoomStateResponse getRoomStateResponse{
-		1,
-		!room.getRoomData().isActive,
-		room.getAllUsers(),
-		room.getRoomData().numOfQuestionsInGame,
-		room.getRoomData().timePerQuestion,
-	};
-	requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(getRoomStateResponse);
-	requestResult.newHandler = nullptr;
-	return requestResult;
-}
+//RequestResult HelperFunctions::getRoomState(Room& room)
+//{
+//	RequestResult requestResult;
+//	GetRoomStateResponse getRoomStateResponse{
+//		1,
+//		!room.getRoomData().isActive,
+//		room.getAllUsers(),
+//		room.getRoomData().numOfQuestionsInGame,
+//		room.getRoomData().timePerQuestion,
+//	};
+//	requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(getRoomStateResponse);
+//	requestResult.newHandler = nullptr;
+//	return requestResult;
+//}

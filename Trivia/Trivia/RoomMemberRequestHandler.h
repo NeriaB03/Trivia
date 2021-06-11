@@ -16,6 +16,6 @@ private:
 	RoomManager& _roomManager;
 	class RequestHandlerFactory& _handlerFactory;
 	virtual RequestResult leaveRoom(RequestInfo requestInfo);
-	virtual RequestResult startGame(RequestInfo requestInfo);
 	virtual RequestResult getRoomState(RequestInfo requestInfo);
+	virtual RequestResult startGame(RequestInfo requestInfo);
 };

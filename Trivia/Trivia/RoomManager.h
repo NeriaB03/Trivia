@@ -12,6 +12,10 @@ public:
 	std::vector<RoomData> getRooms() const;
 	Room getRoomById(unsigned int id) const;
 	Room getRoomByPlayerInTheRoom(std::string username);
+	bool addUserToRoomById(unsigned int id,LoggedUser loggedUser);
+	bool removeUserFromRoomById(unsigned int id, LoggedUser loggedUser);
+	void setRoomState(unsigned int id,unsigned int newState);
+	void startGame(unsigned int id);
 private:
 	std::map<unsigned int,Room> _rooms;
 	bool checkIfRoomExist(unsigned int id) const;

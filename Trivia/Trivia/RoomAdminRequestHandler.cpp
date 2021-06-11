@@ -1,6 +1,6 @@
 #include "RoomAdminRequestHandler.h"
 
-RoomAdminRequestHandler::RoomAdminRequestHandler(RequestHandlerFactory& handlerFactory, LoggedUser loggedUser):_handlerFactory(handlerFactory),_loggedUser(loggedUser),_roomManager(_handlerFactory.getRoomManager()),_room(_roomManager.getRoomByPlayerInTheRoom(_loggedUser.getUsername()))
+RoomAdminRequestHandler::RoomAdminRequestHandler(RequestHandlerFactory& handlerFactory, LoggedUser loggedUser):_handlerFactory(handlerFactory),_roomManager(handlerFactory.getRoomManager()),_loggedUser(loggedUser),_room(handlerFactory.getRoomManager().getRoomByPlayerInTheRoom(loggedUser.getUsername()))
 {
 }
 
@@ -29,11 +29,7 @@ RequestResult RoomAdminRequestHandler::handleRequest(RequestInfo requestInfo)
 RequestResult RoomAdminRequestHandler::closeRoom(RequestInfo requestInfo)
 {
 	RequestResult requestResult;
-	for (auto const& it : this->_room.getAllUsers()) {
-		RoomMemberRequestHandler* roomMemberRequestHandler = this->_handlerFactory.createRoomMemberRequestHandler(LoggedUser(it));
-		roomMemberRequestHandler->handleRequest(requestInfo);
-
-	}
+	this->_handlerFactory.getRoomManager().setRoomState(this->_room.getRoomData().id, 0);
 	CloseRoomResponse closeRoomResponse{
 		1,
 	};
@@ -45,11 +41,7 @@ RequestResult RoomAdminRequestHandler::closeRoom(RequestInfo requestInfo)
 RequestResult RoomAdminRequestHandler::startGame(RequestInfo requestInfo)
 {
 	RequestResult requestResult;
-	for (auto const& it : this->_room.getAllUsers()) {
-		RoomMemberRequestHandler* roomMemberRequestHandler = this->_handlerFactory.createRoomMemberRequestHandler(LoggedUser(it));
-		roomMemberRequestHandler->handleRequest(requestInfo);
-
-	}
+	this->_handlerFactory.getRoomManager().startGame(this->_room.getRoomData().id);
 	StartGameResponse startGameResponse{
 		1,
 	};
@@ -60,5 +52,19 @@ RequestResult RoomAdminRequestHandler::startGame(RequestInfo requestInfo)
 
 RequestResult RoomAdminRequestHandler::getRoomState(RequestInfo requestInfo)
 {
-	return HelperFunctions::getRoomState(this->_room);
+	RequestResult requestResult;
+	GetRoomStateResponse getRoomStateResponse{
+		1,
+		this->_handlerFactory.getRoomManager().getRoomByPlayerInTheRoom(this->_loggedUser.getUsername()).getRoomData().isActive,
+		this->_handlerFactory.getRoomManager().getRoomByPlayerInTheRoom(this->_loggedUser.getUsername()).getRoomData().hasGameBegun,
+		this->_handlerFactory.getRoomManager().getRoomByPlayerInTheRoom(this->_loggedUser.getUsername()).getAllUsers(),
+		this->_room.getRoomData().numOfQuestionsInGame,
+		this->_room.getRoomData().timePerQuestion,
+		this->_room.getRoomData().name,
+		this->_room.getAllUsers().front(),
+		this->_room.getRoomData().maxPlayers,
+	};
+	requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(getRoomStateResponse);
+	requestResult.newHandler = nullptr;
+	return requestResult;
 }
