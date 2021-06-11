@@ -17,6 +17,8 @@ namespace Client
         public static IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 666);
         public static bool isClosing = false;
         public static bool isUserExistOrIsPasswordMatch = false;
+        public static bool isRoomAdmin = false;
+        public static bool gameStarted = false;
         [STAThread]
         static void Main()
         {
@@ -28,13 +30,33 @@ namespace Client
                 Application.Run(new Login());
                 if (!isUserExistOrIsPasswordMatch && !isClosing) Application.Run(new Signup());
             }
-            if (isClosing) Application.Exit();
-            else
+            while (!isClosing)
             {
-                //proceed to game screen
+                //proceed to menu screen
                 Application.Run(new MainMenu());
-                if (isClosing) Application.Exit();
+                if (!isClosing)
+                {
+                    Application.Run(new Room());
+                    if (gameStarted)
+                    {
+                        //start game
+                        Console.WriteLine("Game Started Screen...");
+                        isClosing = true;
+                    }
+                }
             }
+            Application.Exit();
+        }
+        public static void logOut()
+        {
+            Client.Program.isClosing = true;
+            //log out
+            string loginReq = "8" + "0000";
+            Console.WriteLine(loginReq);
+            Client.Program.sock.Send(System.Text.Encoding.ASCII.GetBytes(loginReq));
+            byte[] bytes = new byte[1024];
+            int bytesRec = Client.Program.sock.Receive(bytes);
+            Client.Program.sock.Close();
         }
     }
     class User
@@ -77,7 +99,7 @@ namespace Client
             get;set;
         }
     }
-    class Room
+    class RoomInfo
     {
         public string roomName
         {
@@ -102,5 +124,17 @@ namespace Client
         {
             get;set;
         }
+    }
+    class RoomState
+    {
+        public int status { get;set; }
+        public string admin { get;set; }
+        public int answerTimeout { get;set; }
+        public int hasGameBegun { get;set; }
+        public int isActive { get;set; }
+        public int maxPlayers { get;set; }
+        public string name { get;set; }
+        public string players { get;set; }
+        public int questionCount { get;set; }
     }
 }

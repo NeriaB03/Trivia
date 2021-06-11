@@ -73,7 +73,6 @@ namespace Client
             byte[] bytes = new byte[1024];
             int bytesRec = Client.Program.sock.Receive(bytes);
             json = Encoding.ASCII.GetString(bytes, 0, bytesRec);
-            Console.WriteLine(json);
             if (JsonConvert.DeserializeObject<Status>(json).status == 1)
             {
                 Client.Program.isUserExistOrIsPasswordMatch = true;

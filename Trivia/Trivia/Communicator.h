@@ -10,6 +10,7 @@
 #include "RequestHandlerFactory.h"
 #include "JsonRequestPacketDeserializer.h"
 #include "JsonResponsePacketSerializer.h"
+#include <mutex>
 
 #define PORT 666
 #define BUFFER 1024
@@ -21,6 +22,8 @@ public:
 	~Communicator();
 	void startHandleRequest();
 private:
+	void handleAdminInRoom(SOCKET s,LoggedUser loggedUser);
+	void handleMemberInRoom(SOCKET s,LoggedUser loggedUser);
 	SOCKET _serverSocket;
 	std::map<SOCKET,IRequestHandler*> _clients;
 	void bindAndListen();
@@ -31,4 +34,6 @@ private:
 	char* getPartFromSocket(SOCKET sc, int bytesNum, int flags);
 	std::pair<RequestInfo,std::pair<char,int>> getDataVector(SOCKET s);
 	RequestHandlerFactory& _requestHandlerFactory;
+	bool checkIfRoomAlive(LoggedUser loggedUser);
+	void handleGetRoomStateRequest(SOCKET s, LoggedUser loggedUser);
 };

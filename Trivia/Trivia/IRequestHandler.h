@@ -6,6 +6,7 @@
 #include "LoginManager.h"
 #include "JsonRequestPacketDeserializer.h"
 #include "JsonResponsePacketSerializer.h"
+#include "HelperFunctions.h"
 
 struct RequestInfo {
 	int id;
