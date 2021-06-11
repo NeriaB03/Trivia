@@ -22,6 +22,10 @@ enum Response
 	MT_CLIENT_GET_STATISTICS = '6',
 	MT_CLIENT_LOG_OUT = '8',
 	MT_CLIENT_HIGH_SCORES = '0',
+	MT_CLIENT_CLOSE_ROOM = '!',
+	MT_CLIENT_START_GAME = '@',
+	MT_CLIENT_GET_ROOM_STATE = '#',
+	MT_CLIENT_LEAVE_ROOM = '$',
 };
 
 struct ErrorResponse {
@@ -64,6 +68,30 @@ struct CreateRoomResponse {
 	unsigned int status;
 };
 
+struct CloseRoomResponse {
+	unsigned int status;
+};
+
+struct StartGameResponse {
+	unsigned int status;
+};
+
+struct GetRoomStateResponse {
+	unsigned int status;
+	unsigned int isActive;
+	bool hasGameBegun;
+	std::vector<std::string> players;
+	unsigned int questionCount;
+	unsigned int answerTimeout;
+	std::string roomName;
+	std::string admin;
+	unsigned int maxNumOfPlayers;
+};
+
+struct LeaveRoomResponse {
+	unsigned int status;
+};
+
 class JsonResponsePacketSerializer {
 public:
 	static std::vector<char> serializeResponse(ErrorResponse er);
@@ -76,6 +104,10 @@ public:
 	static std::vector<char> serializeResponse(CreateRoomResponse cr);
 	static std::vector<char> serializeResponse(GetStatisticsResponse sr);
 	static std::vector<char> serializeResponse(GetHighScoresResponse hsr);
+	static std::vector<char> serializeResponse(CloseRoomResponse crr);
+	static std::vector<char> serializeResponse(StartGameResponse sgr);
+	static std::vector<char> serializeResponse(GetRoomStateResponse grsr);
+	static std::vector<char> serializeResponse(LeaveRoomResponse lrr);
 private:
 	static std::string getPaddedNumber(int num, int digits);
 };

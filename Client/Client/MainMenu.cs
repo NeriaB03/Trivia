@@ -223,16 +223,30 @@ namespace Client
             byte[] bytes = new byte[1024];
             int bytesRec = Client.Program.sock.Receive(bytes);
             string json = Encoding.ASCII.GetString(bytes, 0, bytesRec);
-            string[] allStats = json.Split(',');
-            allStats = allStats.Take(allStats.Count() - 1).ToArray(); //remove last element (because its empty)
-            correctAnswersPanel.Size = new Size((int.Parse(allStats[2])*200)/int.Parse(allStats[1]), correctAnswersPanel.Height);//allStats[2] = correct answers,allStats[1] = total answers
-            totalAnswersPanel.Visible = true;
-            correctAnswersPanel.Visible = true;
-            totalAnswersLabel.Visible = true;
-            totalGamesLabel.Visible = true;
-            averageTimeLabel.Visible = true;
-            totalGamesLabel.Text = totalGamesLabel.Text.ToString() + allStats[3];//allStats[3] = total games
-            averageTimeLabel.Text = averageTimeLabel.Text.ToString() + allStats[4];//allStats[4] = average time
+            if (json != "NULL")
+            {
+                string[] allStats = json.Split(',');
+                allStats = allStats.Take(allStats.Count() - 1).ToArray(); //remove last element (because its empty)
+                correctAnswersPanel.Size = new Size((int.Parse(allStats[2]) * 200) / int.Parse(allStats[1]), correctAnswersPanel.Height);//allStats[2] = correct answers,allStats[1] = total answers
+                totalAnswersPanel.Visible = true;
+                correctAnswersPanel.Visible = true;
+                totalAnswersLabel.Visible = true;
+                totalGamesLabel.Visible = true;
+                averageTimeLabel.Visible = true;
+                totalGamesLabel.Text = totalGamesLabel.Text.ToString() + allStats[3];//allStats[3] = total games
+                averageTimeLabel.Text = averageTimeLabel.Text.ToString() + allStats[4];//allStats[4] = average time
+            }
+            else
+            {
+                correctAnswersPanel.Size = new Size(0,correctAnswersPanel.Height);
+                totalAnswersPanel.Visible = true;
+                correctAnswersPanel.Visible = true;
+                totalAnswersLabel.Visible = true;
+                totalGamesLabel.Visible = true;
+                averageTimeLabel.Visible = true;
+                totalGamesLabel.Text = totalGamesLabel.Text.ToString() + "0";
+                averageTimeLabel.Text = averageTimeLabel.Text.ToString() + "NULL";
+            }
 
             //get public highest scores
             request = '0' + "0000";
@@ -272,14 +286,7 @@ namespace Client
 
         private void exitButton_Click(object sender, EventArgs e)
         {
-            Client.Program.isClosing = true;
-            //log out
-            string loginReq = "8" + "0000";
-            Console.WriteLine(loginReq);
-            Client.Program.sock.Send(System.Text.Encoding.ASCII.GetBytes(loginReq));
-            byte[] bytes = new byte[1024];
-            int bytesRec = Client.Program.sock.Receive(bytes);
-            Console.WriteLine("Echoed test = {0}", Encoding.ASCII.GetString(bytes, 0, bytesRec));
+            Program.logOut();
             this.Close();
         }
 
@@ -317,19 +324,17 @@ namespace Client
                 byte[] bytes = new byte[1024];
                 int bytesRec = Client.Program.sock.Receive(bytes);
                 json = Encoding.ASCII.GetString(bytes, 0, bytesRec);
-                Console.WriteLine(json);
                 if (JsonConvert.DeserializeObject<Status>(json).status == 1)
                 {
-                    Console.WriteLine("JOINED ROOM SUCCESSFULLY");
                     errorLabel.Visible = false;
-                    //this.Close();
+                    Program.isRoomAdmin = false;
+                    Program.isClosing = false;
+                    this.Close();
                 }
                 else
                 {
-                    Console.WriteLine("ERROR WHILE JOINING ROOM");
                     errorLabel.Text = "Room does not exists...";
                     errorLabel.Visible = true;
-                    //this.close();
                 }
             }
             else
@@ -339,32 +344,29 @@ namespace Client
                     maxUsersError.Clear();
                     maxQustionsError.Clear();
                     timePerQuestionError.Clear();
-                    object room = new Room
+                    object roomInfo = new RoomInfo
                     {
                         roomName = roomnameTB.Text.ToString(),
                         maxUsers = int.Parse(numOfPlayersTB.Text.ToString()),
                         questionCount = int.Parse(numOfQuestionsTB.Text.ToString()),
                         questionTimeout = int.Parse(timePerQuestionTB.Text.ToString())
                     };
-                    string json = JsonConvert.SerializeObject(room, Formatting.Indented);
+                    string json = JsonConvert.SerializeObject(roomInfo, Formatting.Indented);
                     string request = '9' + json.Length.ToString("D4") + json;
                     Client.Program.sock.Send(System.Text.Encoding.ASCII.GetBytes(request));
                     byte[] bytes = new byte[1024];
                     int bytesRec = Client.Program.sock.Receive(bytes);
                     json = Encoding.ASCII.GetString(bytes, 0, bytesRec);
-                    Console.WriteLine(json);
                     if (JsonConvert.DeserializeObject<Status>(json).status == 1)
                     {
-                        Console.WriteLine("ROOM CREATED");
                         errorLabel.Visible = false;
-                        //this.Close();
+                        Program.isRoomAdmin = true;
+                        this.Close();
                     }
                     else
                     {
-                        Console.WriteLine("ERROR WHILE CREATING ROOM");
                         errorLabel.Text = "Room already exists...";
                         errorLabel.Visible = true;
-                        //this.close();
                     }
                 }
                 else

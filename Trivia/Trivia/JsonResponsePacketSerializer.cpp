@@ -165,10 +165,11 @@ std::vector<char> JsonResponsePacketSerializer::serializeResponse(GetRoomStateRe
     std::string allPlayers = "";
     for (auto const& it : grsr.players) {
         allPlayers += it;
+        allPlayers += ',';
     }
     //create the json object
     nlohmann::json joinJson = {
-        {"Status",std::to_string(grsr.status)},{"hasGameBegan",std::to_string(grsr.hasGameBegan)},{"players",allPlayers},{"questionCount",std::to_string(grsr.questionCount)},{"answerTimeout",std::to_string(grsr.answerTimeout)}
+        {"Status",std::to_string(grsr.status)},{"hasGameBegun",std::to_string(grsr.hasGameBegun)},{"isActive",std::to_string(grsr.isActive)},{"players",allPlayers},{"questionCount",std::to_string(grsr.questionCount)},{"answerTimeout",std::to_string(grsr.answerTimeout)},{"name",grsr.roomName},{"admin",grsr.admin},{"maxPlayers",grsr.maxNumOfPlayers}
     };
     std::string jsonAsString = joinJson.dump(); //convert the json object to string
     for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer

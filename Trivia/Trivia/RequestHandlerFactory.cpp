@@ -36,3 +36,15 @@ RoomManager& RequestHandlerFactory::getRoomManager()
 {
 	return this->_roomManager;
 }
+
+RoomAdminRequestHandler* RequestHandlerFactory::createRoomAdminRequestHandler(LoggedUser loggedUser)
+{
+	RoomAdminRequestHandler* rarh = new RoomAdminRequestHandler((*this), loggedUser);
+	return rarh;
+}
+
+RoomMemberRequestHandler* RequestHandlerFactory::createRoomMemberRequestHandler(LoggedUser loggedUser)
+{
+	RoomMemberRequestHandler* rmrh = new RoomMemberRequestHandler((*this), loggedUser);
+	return rmrh;
+}

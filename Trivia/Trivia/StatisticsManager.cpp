@@ -15,7 +15,6 @@ std::vector<std::string> StatisticsManager::getUserStatistics(std::string userna
 	std::vector<std::pair<std::string, std::string>> statistics = HelperFunctions::runSql(sqlStatement, this->_database->getDatabase());
 	std::vector<std::string> userStatistics;
 	for (auto const& it : statistics) {
-		std::cout << statistics.front().second << std::endl;
 		userStatistics.push_back(statistics.front().second);
 		statistics.erase(statistics.begin());
 	}

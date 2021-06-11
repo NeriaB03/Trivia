@@ -115,10 +115,16 @@ RequestResult MenuRequestHandler::joinRoom(RequestInfo requestInfo)
 		for (auto const& it : rooms) {
 			if (it.name == joinRoomRequest.roomName) roomId = it.id;
 		}
-		this->_handlerFactory.getRoomManager().getRoomById(roomId).addUser(this->_user);
-		joinRoomResponse.status = 1;
+		if(this->_handlerFactory.getRoomManager().addUserToRoomById(roomId, this->_user)) joinRoomResponse.status = 1;
+		else {
+			joinRoomResponse.status = 0;
+			requestResult.newHandler = nullptr;
+		}
 	}
-	else joinRoomResponse.status = 0;
+	else {
+		joinRoomResponse.status = 0;
+		requestResult.newHandler = nullptr;
+	}
 	requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(joinRoomResponse);
 	return requestResult;
 }
@@ -128,16 +134,20 @@ RequestResult MenuRequestHandler::createRoom(RequestInfo requestInfo)
 	RequestResult requestResult;
 	CreateRoomRequest createRoomRequest = JsonRequestPacketDeserializer::deserializeCreateRoomRequest(requestInfo.buffer);
 	RoomData roomData = {
-		this->_handlerFactory.getRoomManager().getRooms().size() != 0 ? this->_handlerFactory.getRoomManager().getRooms().back().id+1 : 1,
+		this->_handlerFactory.getRoomManager().getRooms().size() != 0 ? this->_handlerFactory.getRoomManager().getRooms().back().id + 1 : 1,
 		createRoomRequest.roomName,
 		createRoomRequest.maxUsers,
 		createRoomRequest.questionCount,
 		createRoomRequest.questionTimeout,
-		false
+		1,
+		false,
 	};
 	CreateRoomResponse createRoomResponse;
 	if (this->_handlerFactory.getRoomManager().createRoom(this->_user, roomData)) createRoomResponse.status = 1;
-	else createRoomResponse.status = 0;
+	else {
+		createRoomResponse.status = 0;
+		requestResult.newHandler = nullptr;
+	}
 	requestResult.buffer = JsonResponsePacketSerializer::serializeResponse(createRoomResponse);
 	return requestResult;
 }

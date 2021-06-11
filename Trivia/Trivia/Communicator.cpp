@@ -116,6 +116,10 @@ void Communicator::handleNewClient(SOCKET s)
 				responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
 				responseToSend = responseAsString.c_str();
 				if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+				if (requestResult.newHandler != nullptr) {
+					//handle room as member
+					handleMemberInRoom(s,loggedUser);
+				}
 				break;
 			case MT_CLIENT_CREATE_ROOM:
 				requestInfo.first.id = int(MT_CLIENT_CREATE_ROOM);
@@ -123,11 +127,16 @@ void Communicator::handleNewClient(SOCKET s)
 				responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
 				responseToSend = responseAsString.c_str();
 				if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+				if (requestResult.newHandler != nullptr) {
+					//handle room as admin
+					handleAdminInRoom(s, loggedUser);
+				}
 				break;
 			case MT_CLIENT_GET_STATISTICS:
 				requestInfo.first.id = int(MT_CLIENT_GET_STATISTICS);
 				requestResult = menuRequestHandler->handleRequest(requestInfo.first);
 				responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+				if (responseAsString == "") responseAsString = "NULL"; //if there is no available data about the user send him back 'NULL'
 				responseToSend = responseAsString.c_str();
 				if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
 				break;
@@ -137,6 +146,9 @@ void Communicator::handleNewClient(SOCKET s)
 				responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
 				responseToSend = responseAsString.c_str();
 				if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+				break;
+			case MT_CLIENT_GET_ROOM_STATE: //if the client send get room state request before the admin's request to close the room, handle the get room state request
+				handleGetRoomStateRequest(s, loggedUser);
 				break;
 			}
 		}
@@ -209,4 +221,110 @@ std::pair<RequestInfo, std::pair<char, int>> Communicator::getDataVector(SOCKET 
 	requestInfo.id = 0;
 	requestInfo.receivalTime = std::time(0);
 	return std::pair<RequestInfo, std::pair<char, int>>(requestInfo,codeAndSize);
+<<<<<<< HEAD
+}
+=======
+}
+
+bool Communicator::checkIfRoomAlive(LoggedUser loggedUser)
+{
+	try {
+		this->_requestHandlerFactory.getRoomManager().getRoomByPlayerInTheRoom(loggedUser.getUsername());
+		return true;
+	}
+	catch (std::exception& e) {
+		return false;
+	}
+}
+
+void Communicator::handleGetRoomStateRequest(SOCKET s, LoggedUser loggedUser)
+{
+	IRequestHandler* roomMemberRequestHandler = new RoomMemberRequestHandler(this->_requestHandlerFactory, loggedUser);
+	std::pair<RequestInfo, std::pair<char, int>> requestInfo;
+	requestInfo.first.id = int(MT_CLIENT_GET_ROOM_STATE);
+	RequestResult requestResult = roomMemberRequestHandler->handleRequest(requestInfo.first);
+	std::string responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+	const char* responseToSend = responseAsString.c_str();
+	if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+}
+
+void Communicator::handleMemberInRoom(SOCKET s,LoggedUser loggedUser)
+{
+	IRequestHandler* roomMemberRequestHandler = new RoomMemberRequestHandler(this->_requestHandlerFactory, loggedUser);
+	std::pair<RequestInfo, std::pair<char, int>> requestInfo;
+	RequestResult requestResult;
+	std::string responseAsString = "";
+	const char* responseToSend;
+	bool isRoomAlive = checkIfRoomAlive(loggedUser);
+	while(requestInfo.first.id != MT_CLIENT_LEAVE_ROOM && isRoomAlive) {
+		requestInfo = getDataVector(s);
+		switch (requestInfo.second.first) {
+		case MT_CLIENT_LEAVE_ROOM:
+			requestInfo.first.id = int(MT_CLIENT_LEAVE_ROOM);
+			requestResult = roomMemberRequestHandler->handleRequest(requestInfo.first);
+			responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+			responseToSend = responseAsString.c_str();
+			if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+			break;
+		case MT_CLIENT_GET_ROOM_STATE:
+			requestInfo.first.id = int(MT_CLIENT_GET_ROOM_STATE);
+			requestResult = roomMemberRequestHandler->handleRequest(requestInfo.first);
+			responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+			responseToSend = responseAsString.c_str();
+			if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+			break;
+		case MT_CLIENT_START_GAME:
+			requestInfo.first.id = int(MT_CLIENT_START_GAME);
+			requestResult = roomMemberRequestHandler->handleRequest(requestInfo.first);
+			responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+			responseToSend = responseAsString.c_str();
+			if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+			//cotinue to room
+			std::cout << "Continue to room" << std::endl;
+			break;
+		}
+		isRoomAlive = checkIfRoomAlive(loggedUser);
+	}
+	if (requestInfo.first.id != MT_CLIENT_LEAVE_ROOM) {//if the admin closed the room (client did not send leave room request) so send him leave room response
+		requestInfo.first.id = int(MT_CLIENT_LEAVE_ROOM);
+		requestResult = roomMemberRequestHandler->handleRequest(requestInfo.first);
+		responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+		responseToSend = responseAsString.c_str();
+		if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+	}
+}
+
+void Communicator::handleAdminInRoom(SOCKET s,LoggedUser loggedUser)
+{
+	IRequestHandler* roomAdminRequestHandler = new RoomAdminRequestHandler(this->_requestHandlerFactory, loggedUser);
+	std::pair<RequestInfo, std::pair<char, int>> requestInfo;
+	RequestResult requestResult;
+	std::string responseAsString = "";
+	const char* responseToSend;
+	while(requestInfo.first.id != MT_CLIENT_CLOSE_ROOM) {
+		requestInfo = getDataVector(s);
+		switch (requestInfo.second.first) {
+		case MT_CLIENT_START_GAME:
+			requestInfo.first.id = int(MT_CLIENT_START_GAME);
+			requestResult = roomAdminRequestHandler->handleRequest(requestInfo.first);
+			responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+			responseToSend = responseAsString.c_str();
+			if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+			//continue to room
+			std::cout << "Continue to room as admin" << std::endl;
+			break;
+		case MT_CLIENT_CLOSE_ROOM:
+			requestInfo.first.id = int(MT_CLIENT_CLOSE_ROOM);
+			requestResult = roomAdminRequestHandler->handleRequest(requestInfo.first);
+			responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
+			responseToSend = responseAsString.c_str();
+			if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
+			break;
+		case MT_CLIENT_GET_ROOM_STATE:
+			handleGetRoomStateRequest(s,loggedUser);
+			break;
+		}
+	}
+	Sleep(3000); //wait 3 seconds to all users to exit the room before delete it
+	this->_requestHandlerFactory.getRoomManager().deleteRoom(this->_requestHandlerFactory.getRoomManager().getRoomByPlayerInTheRoom(loggedUser.getUsername()).getRoomData().id);
 }
