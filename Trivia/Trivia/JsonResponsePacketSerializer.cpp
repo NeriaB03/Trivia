@@ -233,9 +233,11 @@ std::vector<char> JsonResponsePacketSerializer::serializeResponse(SubmitAnswerRe
 
 std::vector<char> JsonResponsePacketSerializer::serializeResponse(GetQuestionResponse gqr)
 {
-    nlohmann::json resultsJson;
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json questionsJson;
     if (gqr.status == 1) {
-        resultsJson = {
+        questionsJson = {
             {"Status",std::to_string(gqr.status)},{"Question",gqr.question}
         };
     }
@@ -247,10 +249,13 @@ std::vector<char> JsonResponsePacketSerializer::serializeResponse(GetQuestionRes
             answers += it.second;
             answers += ",";
         }
-        resultsJson = {
+        questionsJson = {
             {"Status",std::to_string(gqr.status)},{"Answers",answers}
         };
     }
+    std::string jsonAsString = questionsJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
 }
 
 std::vector<char> JsonResponsePacketSerializer::serializeResponse(LeaveGameResponse lgr)

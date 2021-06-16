@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <iostream>
 #include <vector>
@@ -26,6 +26,10 @@ enum Response
 	MT_CLIENT_START_GAME = '@',
 	MT_CLIENT_GET_ROOM_STATE = '#',
 	MT_CLIENT_LEAVE_ROOM = '$',
+	MT_CLIENT_LEAVE_GAME = '%',
+	MT_CLIENT_GET_QUESTION = '^',
+	MT_CLIENT_SUBMIT_ANSWER = '&',
+	MT_CLIENT_GET_GAME_RESULT = '*',
 };
 
 struct ErrorResponse {
@@ -107,16 +111,16 @@ struct SubmitAnswerResponse {
 	unsigned int correctAnswerId;
 };
 
-struct GetGameResultsResponse {
-	unsigned int status;
-	std::vector<PlayerResults> results;
-};
-
 struct PlayerResults {
 	std::string username;
 	unsigned int correctAnswerCount;
 	unsigned int wrongAnswerCount;
-	unsigned int averageAnswerTime
+	unsigned int averageAnswerTime;
+};
+
+struct GetGameResultsResponse {
+	unsigned int status;
+	std::vector<PlayerResults> results;
 };
 
 class JsonResponsePacketSerializer {

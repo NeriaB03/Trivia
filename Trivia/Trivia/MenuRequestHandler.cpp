@@ -1,6 +1,6 @@
 #include "MenuRequestHandler.h"
 
-MenuRequestHandler::MenuRequestHandler(RequestHandlerFactory& requestHandlerFactory,LoggedUser loggedUser):_handlerFactory(requestHandlerFactory), _roomManager(requestHandlerFactory.getRoomManager()), _statisticsManager(requestHandlerFactory.getStatisticsManager()), _user(loggedUser)
+MenuRequestHandler::MenuRequestHandler(RequestHandlerFactory& requestHandlerFactory,LoggedUser loggedUser):_handlerFactory(requestHandlerFactory),_user(loggedUser)
 {
 }
 

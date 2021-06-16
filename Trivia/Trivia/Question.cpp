@@ -10,3 +10,13 @@ Question::Question(std::string question, std::string correctAnswer, std::vector<
 	auto itPos = this->_answers.begin() + randomNum;
 	auto newIt = this->_answers.insert(itPos, correctAnswer);
 }
+
+std::vector<std::string> Question::getAnswers()
+{
+	return this->_answers;
+}
+
+std::string Question::getCorrectAnswer()
+{
+	return this->_correctAnswer;
+}

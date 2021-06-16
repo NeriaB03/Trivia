@@ -14,7 +14,8 @@ void Server::run()
 	StatisticsManager statisticsManager(database);
 	RoomManager roomManager;
 	LoginManager loginManager(database);
-	RequestHandlerFactory requestHandlerFactory(database, loginManager, statisticsManager, roomManager);
+	GameManager gameManager(database);
+	RequestHandlerFactory requestHandlerFactory(database, loginManager, statisticsManager, roomManager,gameManager);
 	Communicator communicator(requestHandlerFactory);
 	std::thread t_connector(&Communicator::startHandleRequest, std::ref(communicator));
 	t_connector.detach();

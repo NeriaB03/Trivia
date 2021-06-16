@@ -276,7 +276,7 @@ void Communicator::handleMemberInRoom(SOCKET s,LoggedUser loggedUser)
 			responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
 			responseToSend = responseAsString.c_str();
 			if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
-			//cotinue to room
+			//cotinue to game
 			break;
 		}
 		isRoomAlive = checkIfRoomAlive(loggedUser);
@@ -306,7 +306,7 @@ void Communicator::handleAdminInRoom(SOCKET s,LoggedUser loggedUser)
 			responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
 			responseToSend = responseAsString.c_str();
 			if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
-			//continue to room
+			//continue to game
 			break;
 		case MT_CLIENT_CLOSE_ROOM:
 			requestInfo.first.id = int(MT_CLIENT_CLOSE_ROOM);

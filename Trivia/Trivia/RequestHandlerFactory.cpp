@@ -1,6 +1,6 @@
 #include "RequestHandlerFactory.h"
 
-RequestHandlerFactory::RequestHandlerFactory(IDatabase* database,LoginManager& loginManager,StatisticsManager& statisticsManager,RoomManager& roomManager):_loginManager(loginManager),_statisticsManager(statisticsManager),_roomManager(roomManager)
+RequestHandlerFactory::RequestHandlerFactory(IDatabase* database,LoginManager& loginManager,StatisticsManager& statisticsManager,RoomManager& roomManager,GameManager& gameManager):_loginManager(loginManager),_statisticsManager(statisticsManager),_roomManager(roomManager),_gameManager(gameManager)
 {
 	this->_database = database;
 }
@@ -47,4 +47,15 @@ RoomMemberRequestHandler* RequestHandlerFactory::createRoomMemberRequestHandler(
 {
 	RoomMemberRequestHandler* rmrh = new RoomMemberRequestHandler((*this), loggedUser);
 	return rmrh;
+}
+
+GameRequestHandler* RequestHandlerFactory::createGameRequestHandler(LoggedUser loggedUser)
+{
+	GameRequestHandler* grh = new GameRequestHandler((*this),loggedUser);
+	return grh;
+}
+
+GameManager& RequestHandlerFactory::getGameManager()
+{
+	return this->_gameManager;
 }
