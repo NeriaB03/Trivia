@@ -9,6 +9,8 @@
 class Question {
 public:
 	Question(std::string question,std::string correctAnswer,std::vector<std::string> incorrectAnswers);
+	std::vector<std::string> getAnswers();
+	std::string getCorrectAnswer();
 private:
 	std::string _question;
 	std::string _correctAnswer;

@@ -8,13 +8,11 @@
 class MenuRequestHandler : public IRequestHandler{
 public:
 	MenuRequestHandler(class RequestHandlerFactory& requestHandlerFactory,LoggedUser loggedUser);
-	~MenuRequestHandler();
+	virtual ~MenuRequestHandler();
 	virtual bool isRequestRelevant(RequestInfo requestInfo);
 	virtual RequestResult handleRequest(RequestInfo requestInfo);
 private:
 	LoggedUser _user;
-	RoomManager& _roomManager;
-	StatisticsManager& _statisticsManager;
 	class RequestHandlerFactory& _handlerFactory;
 	RequestResult signout(RequestInfo requestInfo);
 	RequestResult getRooms(RequestInfo requestInfo);

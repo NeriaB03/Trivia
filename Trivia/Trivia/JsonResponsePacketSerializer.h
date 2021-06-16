@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <iostream>
 #include <vector>
@@ -26,6 +26,10 @@ enum Response
 	MT_CLIENT_START_GAME = '@',
 	MT_CLIENT_GET_ROOM_STATE = '#',
 	MT_CLIENT_LEAVE_ROOM = '$',
+	MT_CLIENT_LEAVE_GAME = '%',
+	MT_CLIENT_GET_QUESTION = '^',
+	MT_CLIENT_SUBMIT_ANSWER = '&',
+	MT_CLIENT_GET_GAME_RESULT = '*',
 };
 
 struct ErrorResponse {
@@ -92,6 +96,33 @@ struct LeaveRoomResponse {
 	unsigned int status;
 };
 
+struct LeaveGameResponse {
+	unsigned int status;
+};
+
+struct GetQuestionResponse {
+	unsigned int status;
+	std::string question;
+	std::map<unsigned int,std::string> answers;
+};
+
+struct SubmitAnswerResponse {
+	unsigned int status;
+	unsigned int correctAnswerId;
+};
+
+struct PlayerResults {
+	std::string username;
+	unsigned int correctAnswerCount;
+	unsigned int wrongAnswerCount;
+	unsigned int averageAnswerTime;
+};
+
+struct GetGameResultsResponse {
+	unsigned int status;
+	std::vector<PlayerResults> results;
+};
+
 class JsonResponsePacketSerializer {
 public:
 	static std::vector<char> serializeResponse(ErrorResponse er);
@@ -108,6 +139,10 @@ public:
 	static std::vector<char> serializeResponse(StartGameResponse sgr);
 	static std::vector<char> serializeResponse(GetRoomStateResponse grsr);
 	static std::vector<char> serializeResponse(LeaveRoomResponse lrr);
+	static std::vector<char> serializeResponse(GetGameResultsResponse ggrr);
+	static std::vector<char> serializeResponse(SubmitAnswerResponse sar);
+	static std::vector<char> serializeResponse(GetQuestionResponse gqr);
+	static std::vector<char> serializeResponse(LeaveGameResponse lgr);
 private:
 	static std::string getPaddedNumber(int num, int digits);
 };

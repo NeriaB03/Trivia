@@ -1,6 +1,6 @@
 #include "RoomAdminRequestHandler.h"
 
-RoomAdminRequestHandler::RoomAdminRequestHandler(RequestHandlerFactory& handlerFactory, LoggedUser loggedUser):_handlerFactory(handlerFactory),_roomManager(handlerFactory.getRoomManager()),_loggedUser(loggedUser),_room(handlerFactory.getRoomManager().getRoomByPlayerInTheRoom(loggedUser.getUsername()))
+RoomAdminRequestHandler::RoomAdminRequestHandler(RequestHandlerFactory& handlerFactory, LoggedUser loggedUser):_handlerFactory(handlerFactory),_loggedUser(loggedUser),_room(handlerFactory.getRoomManager().getRoomByPlayerInTheRoom(loggedUser.getUsername()))
 {
 }
 

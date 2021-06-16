@@ -221,9 +221,6 @@ std::pair<RequestInfo, std::pair<char, int>> Communicator::getDataVector(SOCKET 
 	requestInfo.id = 0;
 	requestInfo.receivalTime = std::time(0);
 	return std::pair<RequestInfo, std::pair<char, int>>(requestInfo,codeAndSize);
-<<<<<<< HEAD
-}
-=======
 }
 
 bool Communicator::checkIfRoomAlive(LoggedUser loggedUser)
@@ -279,8 +276,7 @@ void Communicator::handleMemberInRoom(SOCKET s,LoggedUser loggedUser)
 			responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
 			responseToSend = responseAsString.c_str();
 			if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
-			//cotinue to room
-			std::cout << "Continue to room" << std::endl;
+			//cotinue to game
 			break;
 		}
 		isRoomAlive = checkIfRoomAlive(loggedUser);
@@ -310,8 +306,7 @@ void Communicator::handleAdminInRoom(SOCKET s,LoggedUser loggedUser)
 			responseAsString = HelperFunctions::convertVectorOfCharsToString(requestResult.buffer);
 			responseToSend = responseAsString.c_str();
 			if (send(s, responseToSend, responseAsString.size(), 0) == INVALID_SOCKET) throw std::exception("Error while sending message to client");
-			//continue to room
-			std::cout << "Continue to room as admin" << std::endl;
+			//continue to game
 			break;
 		case MT_CLIENT_CLOSE_ROOM:
 			requestInfo.first.id = int(MT_CLIENT_CLOSE_ROOM);

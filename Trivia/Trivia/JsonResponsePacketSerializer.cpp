@@ -188,6 +188,88 @@ std::vector<char> JsonResponsePacketSerializer::serializeResponse(LeaveRoomRespo
     return buffer;
 }
 
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(GetGameResultsResponse ggrr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json resultsJson;
+    if (ggrr.status == 1) {
+        std::string results;
+        for (auto const& it : ggrr.results) {
+            results += it.username;
+            results += ",";
+            results += std::to_string(it.correctAnswerCount);
+            results += ",";
+            results += std::to_string(it.wrongAnswerCount);
+            results += ",";
+            results += std::to_string(it.averageAnswerTime);
+            results += ";";
+        }
+        resultsJson = {
+            {"Status",std::to_string(ggrr.status)},{"Results",results}
+        };
+    }
+    else {
+        resultsJson = {
+            {"Status",std::to_string(ggrr.status)},{"Results","NULL"}
+        };
+    }
+    std::string jsonAsString = resultsJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(SubmitAnswerResponse sar)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json submitAnswerJson = {
+        {"Status",std::to_string(sar.status)}
+    };
+    std::string jsonAsString = submitAnswerJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(GetQuestionResponse gqr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json questionsJson;
+    if (gqr.status == 1) {
+        questionsJson = {
+            {"Status",std::to_string(gqr.status)},{"Question",gqr.question}
+        };
+    }
+    else {
+        std::string answers;
+        for (auto const& it : gqr.answers) {
+            answers += it.first;
+            answers += ":";
+            answers += it.second;
+            answers += ",";
+        }
+        questionsJson = {
+            {"Status",std::to_string(gqr.status)},{"Answers",answers}
+        };
+    }
+    std::string jsonAsString = questionsJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
+std::vector<char> JsonResponsePacketSerializer::serializeResponse(LeaveGameResponse lgr)
+{
+    std::vector<char> buffer;
+    //create the json object
+    nlohmann::json leaveJson = {
+        {"Status",std::to_string(lgr.status)}
+    };
+    std::string jsonAsString = leaveJson.dump(); //convert the json object to string
+    for (int i = 0; i < jsonAsString.length(); i++) buffer.push_back(jsonAsString[i]); //push every char into the buffer
+    return buffer;
+}
+
 std::string JsonResponsePacketSerializer::getPaddedNumber(int num, int digits)
 {
     std::ostringstream ostr;

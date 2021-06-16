@@ -13,7 +13,6 @@ public:
 private:
 	Room _room;
 	LoggedUser _loggedUser;
-	RoomManager& _roomManager;
 	class RequestHandlerFactory& _handlerFactory;
 	virtual RequestResult closeRoom(RequestInfo requestInfo);
 	virtual RequestResult startGame(RequestInfo requestInfo);
